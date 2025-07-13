@@ -1,0 +1,263 @@
+------------------------------------------------------------------------
+
+Grupo 3
+
+Integrantes:
+
+Xiomara Viguria Lope
+
+Ronal Ramires Izquierdo
+
+Fany Sanchez Coordova
+
+Nayeli Reyes Martínez
+
+## Pc2_1: Bajo peso
+
+```{r}
+install.packages("tidyverse")
+install.packages("rio")
+install.packages("here")
+install.packages("gridExtra")
+install.packages("GGally")
+install.packages("forcats")
+```
+
+```{r}
+library(tidyverse)
+library(rio)
+library(here)
+library(gridExtra) ## Para múltiple gráficos en una sola página
+library(GGally) ## Para gráficos de correlación
+library(forcats)
+```
+
+```{r}
+bajo_peso.csv <- import(here("data", "bajo_peso.csv"))
+```
+
+## Examinamos los datos
+
+```{r}
+str(bajo_peso.csv)
+```
+
+# Conversión
+
+```{r}
+bajo_peso.csv <- bajo_peso.csv |> 
+  mutate_if(is.character, as.factor)
+str(bajo_peso.csv)
+```
+
+# Visualizando distribución de datos
+
+# 1. Visualizando datos categóricos
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = bajo_peso)) +
+  geom_bar()
+
+```
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = fct_infreq(bajo_peso))) +
+  geom_bar()
+```
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = fct_infreq(bajo_peso))) +
+  geom_bar() +
+  labs(y = "cantidad", x = "bajo_peso")
+```
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = bajo_peso, y = ..count../sum(after_stat(count)))) +
+  geom_bar() +
+  labs(y = "Porcentaje", x = "bajo_peso")
+```
+
+# 2. Visualizando Datos Numéricos
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = edad_madre)) +
+  geom_histogram(bins = 10) +
+  labs(y = "Frecuencia", x = "edad_madre")
+```
+
+```{r}
+bajo_peso.csv  |>  
+  ggplot(aes(x = edad_madre)) +
+  geom_histogram(aes(y = ..density..)) +
+  labs(y = "Density", x = "edad_madre)")
+```
+
+```{r}
+hist_1 = bajo_peso.csv |> ggplot(aes(x = edad_madre)) +
+  geom_histogram() +
+  labs(y = "Frecuencia", x = "edad_madre")
+
+hist_2 = bajo_peso.csv  |>  
+  ggplot(aes(x = edad_madre)) +
+  geom_histogram(aes(y = ..density..)) +
+  labs(y = "Density", x = "edad_madre")
+```
+
+```{r}
+grid.arrange(hist_1, hist_2, ncol = 2)
+```
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = edad_madre)) +
+  geom_histogram(bins = 10) +
+  labs(y = "Frecuencia", x = "edad_madre")
+```
+
+```{r}
+bajo_peso.csv |>  
+  ggplot(aes(x = edad_madre)) +
+  geom_histogram(
+    color = "purple ", ## Color de las barras
+    fill = "pink" ## Color de las barras
+    ) + 
+  labs(y = "Frecuencia", 
+       x = "edad_madre")
+```
+
+```{r}
+bajo_peso.csv |>
+  ggplot(aes(x = factor(edad_madre))) +
+  geom_bar() +
+  labs(x = "Edad de la madre", y = "Frecuencia")
+
+
+
+
+
+
+```
+
+## 2.2. Con Boxplots (gráfico de cajas y bigotes)
+
+```{r}
+bajo_peso.csv |> 
+  ggplot(aes(y = peso_madre)) + ## Cambia y por x para invertir el gráfico
+  geom_boxplot() +
+  theme(axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank()) +
+  labs(y = "peso_madre")
+```
+
+```{r}
+box_album_base = boxplot(bajo_peso.csv$peso_madre,
+                         ylab = "peso_madre",
+                         horizontal = TRUE, ## Cambia la dirección del gráfico
+                         col = "pink") ## Añadimos color
+```
+
+# 3. Visualizando variables categóricas *versus* categóricas
+
+```{r}
+bajo_peso.csv |>   
+  group_by(fuma, hipertension)  |>  
+  count() |>   
+  # Compute proportions within grade
+  # n is the default variable created by count()
+  group_by(fuma) |>   
+  mutate(Proportion = n/sum(n))  |> 
+  ggplot(aes(x = fuma, y = Proportion, fill = hipertension)) +
+  geom_bar(position = 'dodge', stat = 'identity') +
+  labs(y = "Proportion",
+       x = "fuma",
+       fill = "Desenlace")
+```
+
+```{r}
+addmargins(prop.table(
+  table(bajo_peso.csv$hipertension, bajo_peso.csv$fuma), 
+  margin = 2), 1)
+```
+
+# Visualizando variables continuas *versus* continuas
+
+```{r}
+bajo_peso.csv |> 
+  ggplot(aes(x = visitas_medicas, y = partos_prematuros)) +
+  geom_point() +
+  labs(x = "visitas_medicas", y = "partos_prematuros)")
+```
+
+```{r}
+bajo_peso.csv |> 
+  ggplot(aes(x = visitas_medicas, y = partos_prematuros)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(x = "visitas_medicas", y = "partos_prematuros")
+```
+
+```{r}
+bajo_peso.csv |> 
+  ggplot(aes(x = visitas_medicas, y = partos_prematuros)) +
+  geom_point() +
+  geom_smooth(stat = "smooth", se = TRUE) +
+  labs(x = "visitas_medicas", y = "partos_prematuros")
+```
+
+```{r}
+bajo_peso.csv |>  
+  select(visitas_medicas, partos_prematuros, peso_nacer) %>% 
+  ggpairs(columnLabels = c("visitas_medicas", "partos_prematuros", "peso_nacer"))
+```
+
+# Realizar calculo de tamaño de muestra
+
+```{r}
+install.packages("epiR")
+```
+
+```{r}
+library(epiR)
+```
+
+# 1. Cálculo de muestra para un estudio de prevalencia (survey)
+
+```{r}
+epi.sssimpleestb(N = NA, Py = 0.187, 
+                 epsilon = 0.20, error = "relative", 
+                 se = 1, sp = 1, 
+                 nfractional = FALSE, conf.level = 0.95)
+```
+
+# 2. Cálculo de muestra para un estudio de casos y controles
+
+```{r}
+epi.sscc(OR = 1.85, p1 = NA, 
+         p0 = 0.224, n = NA, 
+         power = 0.80, r = 1, 
+         phi.coef = 0, design = 1, 
+         sided.test = 2, conf.level = 0.95, 
+         method = "unmatched", nfractional = FALSE, 
+         fleiss = FALSE)
+```
+
+# 3. Cálculo de muestra para un estudio de cohorte
+
+```{r}
+epi.sscohortt(irexp1 = 58/317, irexp0 = 60/621, FT = 4, n = NA, 
+              power = 0.80, r = 1, design = 1, sided.test = 2, 
+              nfractional = FALSE, conf.level = 0.95)
+```
+
+# 4. Cálculo de poder estadístico
+
+```{r}
+epi.sscohortt(irexp1 = 58/317, irexp0 = 60/621, FT = 4, n = 300, 
+              power = NA, r = 1, design = 1, sided.test = 2, 
+              nfractional = FALSE, conf.level = 0.95)
+```

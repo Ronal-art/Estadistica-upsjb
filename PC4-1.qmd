@@ -1,0 +1,87 @@
+---
+Grupo 3
+
+
+
+Integrantes:
+
+
+
+Xiomara Viguria Lope
+
+
+
+Ronal Ramires Izquierdo
+
+
+
+Fany Sanchez Coordova
+
+
+
+Nayeli Reyes Martínez
+---
+
+## CARGAR PAQUETE Y DATOS
+
+```{r}
+install.packages("mice")
+library(mice)
+```
+
+## **Uso de MICE para observar el patrón de datos faltante**
+
+El paquete proporciona una buena función para obtener una mejor comprensión del patrón de datos faltantes`micemd.pattern()`
+
+```{r}
+md.pattern(bac_aguda_1)  #Para poder visualiza el patrón de datos faltantes
+```
+
+## **Imputación de los datos que faltan**
+
+La función se encarga del proceso de imputación`mice()`
+
+```{r}
+imputaciones <- mice(bac_aguda_1, m = 5, method = "pmm", maxit = 10, seed = 123)
+```
+
+```{r}
+data_completo <- complete(imputaciones, action = "long")  # o usa 1, 2, ..., m para elegir una imputación específica
+
+```
+
+```{r}
+library(VIM)
+aggr_plot <- aggr(bac_aguda_1, col=c('navyblue','red'), numbers=TRUE, sortVars=TRUE, labels=names(bac_aguda_1), cex.axis=.7, gap=3, ylab=c("Histogram of missing data","Pattern"))
+```
+
+**La función se encarga del proceso de imputación`mice()`**
+
+```{r}
+tempData <- mice(bac_aguda_1,m=5,maxit=50,meth='pmm',seed=500)
+summary(tempData)
+```
+
+***comprobar los datos imputados, por ejemplo, para la variable Ozono, debe introducir la siguiente línea de código***
+
+```{r}
+tempData$imp$Ozone
+
+```
+
+**Verificar el método de imputación utilizado para cada variable, es muy fácil de hacer`mice`**
+
+```{r}
+tempData$meth
+```
+
+```{r}
+modelFit1 <- with(tempData,lm(año ~ mes+ leucocitos_sangre +cultivo_sangre ))
+summary(pool(modelFit1))
+```
+
+```{r}
+tempData2 <- mice(bac_aguda_1,m=50,seed=245435)
+modelFit2 <- with(tempData2,lm(año ~ mes+ leucocitos_sangre +cultivo_sangre))
+summary(pool(modelFit2))
+```
